@@ -1,6 +1,25 @@
 name: Publish Resume in JSONResume Format as GitHub Page
 
 on:
+  workflow_dispatch:
+    inputs:
+      theme:
+        description: 'Resume Themes to use'
+        required: true
+        type: choice
+        default: 'macchiato'
+        options:
+          - 'macchiato'
+          - 'professional'
+          - 'onepage-plus'
+          - 'kendall'
+          - 'flat'
+          - 'paper'
+          - 'stackoverflow'
+          - 'relaxed'
+          - 'rickosborne'
+          - 'elegant'
+
   push:
     branches: [ main ]
 
@@ -15,6 +34,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    theme: ${{ github.event.inputs.theme || 'macchiato' }}
     needs: check_run
     steps:
       - name: Checkout Repository
@@ -23,7 +43,7 @@ jobs:
       - name: Export Resume as HTML
         uses: kelvintaywl/action-jsonresume-export@v1
         with:
-          theme: macchiato
+          theme: ${{ github.event.inputs.theme || 'macchiato' }}
           resume_filepath: resume.json
           output_filepath: docs/index.html
 
