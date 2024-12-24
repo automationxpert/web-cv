@@ -1,5 +1,5 @@
-name: Publish resume in JSONResume format as Github Page
- 
+name: Publish Resume in JSONResume Format as GitHub Page
+
 on:
   push:
     branches: [ main ]
@@ -7,37 +7,48 @@ on:
 jobs:
   check_run:
     runs-on: ubuntu-latest
-    if: "! contains(github.event.head_commit.message, '[ci skip]')"
+    if: "!contains(github.event.head_commit.message, '[ci skip]')"
     steps:
-      - run: echo "${{ github.event.head_commit.message }}"
+      - name: Log Commit Message
+        run: echo "${{ github.event.head_commit.message }}"
+        shell: bash
 
   build:
     runs-on: ubuntu-latest
     needs: check_run
     steps:
-      - uses: actions/checkout@v2
-      - uses: kelvintaywl/action-jsonresume-export@v1
-        name: Export resume as HTML
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Export Resume as HTML
+        uses: kelvintaywl/action-jsonresume-export@v1
         with:
           theme: macchiato
           resume_filepath: resume.json
-          # modifies the index.html in-place
           output_filepath: docs/index.html
-      - name: Commit published HTML
-        id: commit
+
+      - name: Configure Git
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+        shell: bash
+
+      - name: Commit Changes
+        id: commit
+        run: |
           if [ -n "$(git status --porcelain docs/index.html)" ]; then
             git add docs/index.html
             git commit -m "[ci skip] chore(docs/index.html): update resume page"
-            echo ::set-output name=exit_code::0
+            echo "exit_code=0" >> $GITHUB_ENV
           else
-            echo ::set-output name=exit_code::1
+            echo "exit_code=1" >> $GITHUB_ENV
           fi
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        if: steps.commit.outputs.exit_code == 0
+        shell: bash
+
+      - name: Push Changes
+        uses: github-actions-x/commit@v2.9
+        if: env.exit_code == '0'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+          push: true
