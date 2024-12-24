@@ -34,7 +34,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    theme: ${{ github.event.inputs.theme || 'macchiato' }}
     needs: check_run
     steps:
       - name: Checkout Repository
