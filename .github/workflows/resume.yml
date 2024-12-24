@@ -46,7 +46,7 @@ jobs:
         shell: bash
 
       - name: Push Changes
-        uses: github-actions-x/commit@v2.9
+        uses: ad-m/github-push-action@master
         if: env.exit_code == '0'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
